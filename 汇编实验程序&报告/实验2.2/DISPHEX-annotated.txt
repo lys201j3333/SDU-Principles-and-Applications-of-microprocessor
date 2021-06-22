@@ -1,0 +1,38 @@
+//声明代码段
+CODE SEGMENT
+//ASSUME是段寄存器关联语句，将CS段寄存器与CODE代码段关联起来，也就相当于CS指向程序罢了
+	ASSUME CS:CODE
+//入口地址
+START:
+//一堆MOV都很简单这里就不再写了
+	MOV AL, 3EH
+//从下面可以看到BL起到保护现场的作用
+	MOV BL, AL
+	MOV DL, AL
+	MOV CL, 4
+//SHR是右移指令，由CL中的值可知，移动的位数为4，为的是能够先将高位的输出出来
+	SHR DL, CL
+//将DL寄存器中的值和9进行比较，是为了判断到底是字母还是数字
+	CMP DL, 9
+//当DL小于等于9的时候跳转到NEXT1，否则向下执行
+	JBE NEXT1
+//加7是为了将16进制和ASCII字符关联起来
+	ADD DL, 7
+//下面对NEXT1子程序进行说明
+NEXT1:
+	ADD DL, 30H
+//下面两行共同作用显示DL中的字符
+	MOV AH, 2
+	INT 21H
+
+	MOV DL, BL
+	AND DL, 0FH
+	CMP DL, 9
+	JBE NEXT2
+	ADD DL, 7
+NEXT2:
+	ADD DL, 30H
+	MOV AH, 2
+	INT 21H
+CODE ENDS
+	ENDS START

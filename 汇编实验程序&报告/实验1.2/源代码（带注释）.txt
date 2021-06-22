@@ -1,0 +1,21 @@
+//把4E20H写入AX寄存器
+MOV AX,4E20H
+//将AX寄存器中的数据加上1416H然后放入AX中
+ADD AX,1416H
+//将2000H写入BX中
+MOV BX,2000H
+//将AX加上BX所得数据加入AX中
+ADD AX,BX
+//把AX移入BX中
+MOV BX,AX
+//把AX和BX相加所得数据存入AX中
+ADD AX,BX
+//下面相同很简单就不写了
+MOV AX,001AH
+MOV BX,0026H
+ADD AL,BL
+ADD AH,BL
+ADD BH,BL
+MOV AH,0
+ADD AL,BL
+ADD AL,9CH

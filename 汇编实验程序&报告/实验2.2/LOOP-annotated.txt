@@ -1,0 +1,51 @@
+DATAS SEGMENT
+    
+CODE SEGMENT
+    ASSUME CS: CODE
+START:
+//进行输入指令
+    MOV AH,07H
+    INT 21H
+    MOV DL,AL 
+    MOV BL,DL
+//循环体
+S: CMP DL,39H
+   JGE DECIDE41
+   JMP DECIDE31 
+loop s 
+//对ASCII码对应的十六进制数进行判断
+DECIDE31: CMP DL,31H
+          JGE ONENINE
+          JMP DECIDEOD
+DECIDEOD: CMP DL,0DH
+          JGE NONE
+          JMP NONE
+DECIDE41: CMP DL,41H
+          JGE DECIDE5A
+          JMP START
+DECIDE5A: CMP DL,5AH
+          JGE DECIDE61
+          JMP OUTPUTC
+DECIDE61: CMP DL,61H
+          JGE DECIDE7A
+          JMP NONE
+DECIDE7A: CMP DL,7AH
+          JGE NONE
+          JMP OUTPUTC                             
+                             
+//输出1~9段
+ONENINE:MOV AH,02H
+        INT 21H
+        JMP START
+//输出c段
+OUTPUTC:MOV DL,63H
+        MOV AH,02H
+        INT 21H
+//什么都不做段
+NONE:   JMP START
+//终止程序段
+JEND:   MOV AH, 4CH
+        INT 21H                
+        
+CODE ENDS
+    END START

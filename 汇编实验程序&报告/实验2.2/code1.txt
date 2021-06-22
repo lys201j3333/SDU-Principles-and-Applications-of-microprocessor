@@ -1,0 +1,22 @@
+1.单分支结构
+
+//比较AX和0
+CMP AX,0
+//JGE：判断条件：if AX greater than and equal 0，那么执行NONEG中的内容
+JGE NONEG
+//不满足的条件下就对AX取补，实际上取补码就相当于取的绝对值，老鸟啊！
+NEG AX
+//条件成立时的执行语句，但是不太理解为什么执行语句可以通过NONEG进行传递
+NONEG:MOV RESULT,AX
+
+2.双分支结构
+
+//比较AX和0
+CMP AX,0
+//同上
+JGE NONEG
+//简单的MOV指令
+MOV SIGN,-1
+//考虑如果没有JMP还是会执行NONEG么
+JMP END0
+NONEG:MOV SIGN,0

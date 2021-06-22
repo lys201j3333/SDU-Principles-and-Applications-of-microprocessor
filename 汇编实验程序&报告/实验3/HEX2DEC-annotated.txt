@@ -1,0 +1,98 @@
+DATAS SEGMENT
+    ;存放中转的二进制结果
+    bin dw 10 dup(?) 
+    ;存放将要输出的十进制各个位上的数
+    buf db 5 dup(0)
+    ;输入提示段，后续调用的时候输出
+    msg1 db 'please input a hex number',13,10,'$'
+    ;输出提示段，同上
+    msg2 db 'the dec number:',13,10,'$' 
+    ;回车换行，为了让输出更加好看
+    crlf db 13,10,'$' 
+DATAS ENDS
+
+CODES SEGMENT
+    ;这个只是在编译器中声明一下
+    ASSUME CS:CODES,DS:DATAS 
+START:
+    MOV AX,DATAS
+    MOV DS,AX
+       ;初始化bx
+       mov bx,0
+       ;int 21h指令输出“输入提示”
+       LEA dx,msg1
+       mov ah,9
+       int 21h
+       
+ input:
+       ;int 21h指令输入一个字符
+       mov ah,1       
+       int 21h
+
+       ;对应着思路1的将ASCII码转换成对应的字符
+       sub al,30h      
+       ;输入小于30H的时候跳转，结束输入
+       jl init	
+      
+       ;输入是0~9的时候跳转
+       cmp al,10
+       ;带符号小于10的数跳入bin
+       jl toBin
+       
+       ;在上面的基础上再去减27h，转换成a~f
+       sub al,27h     
+       ;判断比ah小的数（这个就是比字符a对应十六进制小的数）  
+       cmp al,0ah     
+       jl init  
+       ;判断比fh大的数
+       cmp al,0fh 
+       ;结束输入
+       jg init  
+ ;该代码段用于转换为二进制，将输入按照位数进行组合  
+  toBin:           
+       mov cl,4  
+       ;移位运算，左移四位
+       shl bx,cl        
+       mov ah,0        
+       add bx,ax 
+       ;将bx中的数据放入内存bin中
+       mov bin,bx        
+       jmp input        ;继续输入
+       
+  init:                
+      mov ax,bin        
+      mov bx,10        
+      mov si,5        
+  
+  ;转换成为十进制   
+  toDec:            
+      mov dx,0
+      ;除法运算，是AX/BX        
+      div bx
+      ;dx是存储余数的，既然是db类型只要使用dl就可
+      mov [buf+si],dl
+      ;dec是减1指令,这里采用FILO
+      dec si  
+      ;商为0的时候标志算法结束          
+      cmp ax,0       
+      ja toDec
+  
+      ;显示提醒
+      lea dx,crlf         
+      mov ah,9
+      int 21h
+      lea dx,msg2
+      mov ah,9
+      int 21h
+   ;FILO的形式输出buf段中存储的字符   
+  output:              
+      inc si
+      mov dl,[buf+si]
+      add dl,30h            ;转为ascii
+      mov ah,2
+      int 21h
+      cmp si,5
+      jb output
+      
+CODES ENDS
+    END START 

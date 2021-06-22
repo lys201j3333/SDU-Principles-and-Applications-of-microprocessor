@@ -1,0 +1,52 @@
+A51 MACRO ASSEMBLER  BASICIO_SELF                                                         06/16/2021 10:21:28 PAGE     1
+
+
+MACRO ASSEMBLER A51 V8.01
+OBJECT MODULE PLACED IN basicIO_self.OBJ
+ASSEMBLER INVOKED BY: d:\Keil\C51\BIN\A51.EXE basicIO_self.asm SET(SMALL) DEBUG EP
+
+LOC  OBJ            LINE     SOURCE
+
+0000                   1     ORG 0000H
+0000 0130              2             AJMP MAIN
+0030                   3     ORG 0030H
+                       4     
+0030                   5     MAIN:
+0030 758160            6             MOV SP,#60H
+0033 75A0FE            7             MOV P2,#0FEH
+                       8     
+0036                   9     LOOP1:
+0036 2090FD           10             JB P1.0, LOOP1
+                      11             
+0039 E5A0             12             MOV A, P2
+003B 23               13             RL A
+003C F5A0             14             MOV P2, A
+003E 1142             15             acall DL100MS
+0040 80F4             16             SJMP LOOP1
+0042 7FC8             17     DL100MS:        MOV R7,#200
+0044 7EFA             18     DL:                     MOV R6,#250
+0046 DEFE             19                             DJNZ R6,$
+0048 DFFA             20                             DJNZ R7,DL
+004A 22               21             RET
+                      22     END
+A51 MACRO ASSEMBLER  BASICIO_SELF                                                         06/16/2021 10:21:28 PAGE     2
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES
+
+DL . . . . . . . .  C ADDR   0044H   A   
+DL100MS. . . . . .  C ADDR   0042H   A   
+LOOP1. . . . . . .  C ADDR   0036H   A   
+MAIN . . . . . . .  C ADDR   0030H   A   
+P1 . . . . . . . .  D ADDR   0090H   A   
+P2 . . . . . . . .  D ADDR   00A0H   A   
+SP . . . . . . . .  D ADDR   0081H   A   
+
+
+REGISTER BANK(S) USED: 0 
+
+
+ASSEMBLY COMPLETE.  0 WARNING(S), 0 ERROR(S)

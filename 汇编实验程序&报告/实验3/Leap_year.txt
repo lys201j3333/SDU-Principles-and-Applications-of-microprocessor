@@ -1,0 +1,162 @@
+;定义数据段，都是为了声明空间的
+data segment
+    ;输入提醒
+    infon db 0dh,0ah,'Please input a year:$'
+    ;判断输入的年份是闰年
+    Y db 0dh,0ah,'Wow! This is a leap year!$'
+    ;判断输入的年份不是闰年
+    N db 0dh,0ah,'sorry, this is not a leap year!$'
+    w dw 0
+    ;其中的buf是一个缓冲区，被定义为字节型数据，
+    buf db 8
+        db 0
+        db 8 dup(0)
+data ends
+
+;定义一个200bytes的字节
+stack segment stack
+    db 200 dup(0)
+stack ends
+
+code segment
+          assume ds:data,ss:stack,cs:code
+    start:
+        ;指定数据段
+        mov ax,data
+        mov ds,ax
+         
+        ;屏幕上显示指定的string
+        lea dx,infon 
+        mov ah,9
+        int 21h
+        
+        ;int 21h指令在键盘上输入年份字符串
+        lea dx,buf
+        mov ah,10
+        int 21h
+        
+        ;获取实际长度
+        mov cl, [buf+1]
+        ;保证cx的值是[buf+1]对应字节的值
+        mov ch,0
+        
+        ;获取字符串的首地址，详情看缓冲区的解释
+        lea di,buf+2
+        ;调用子程序，将输入字符串化为年份数字
+        call datacate
+        ;调用子程序，判断是否为闰年
+        call ifyears
+        ;jc表示如果进位标志为1，则跳转到a1
+        jc   a1
+        
+        ;否则输出的不是闰年信息
+        lea dx,n
+        mov ah,9
+        int 21h
+        jmp exit
+    ;输出是闰年信息
+    a1:
+        lea dx,y
+        mov ah,9
+        int 21h
+    ;程序结束段
+    exit:
+        mov ah,4ch
+        int 21h   
+
+;通过near指名该子程序在主程序段内
+datacate proc near
+         ;进行cx备份
+         push cx
+         ;cx自减1
+         dec cx
+         ;将buf的首地址赋给si
+         lea si,buf+2
+    ;循环，然后使得si直接指向最后一个字符
+    tt1: inc si
+         loop tt1
+         ;恢复cx
+         pop cx
+         
+         ;将字符转换成为数字
+         mov dh,30h
+         ;向前进一位，这个是当作十进制来处理的？
+         mov bl,10
+         ;ax当作对应位的权值
+         mov ax,1
+    l1:push ax
+    push bx
+    ;dx是接受乘法运算结果的高位
+    push dx
+         ;将单个字符转换为对应的数字
+         sub byte ptr [si],dh
+         ;获取该位数字
+         mov bl,byte ptr[si]
+    mov  bh,0
+        ;将该位乘以相应的权值，结果在ax中，因为年份不会超过两个字节表示
+        mul  bx
+        ;所以的结果相加得到年份
+        add [w],ax
+    ;都进行一顿的恢复
+    pop dx
+    pop bx
+        pop ax
+        ;权值乘以10使得si指向更高一位数字
+        mul bl
+        dec si
+        loop l1
+        ;子程序返回
+        ret
+datacate endp
+
+;是判断是否为闰年的程序
+ifyears proc near
+        ;备份
+        push bx
+        push cx
+        push dx
+        ;获取年份的数据
+        mov ax,[w]
+        ;将年份数据备份到cx中
+        mov cx,ax
+        ;因为被除数要32字节，高位在dx
+        mov dx,0
+        
+        ;这三行判断是否能被100整除
+        mov bx,100  
+        div bx  
+        cmp dx,0
+        ;若不能则跳转到lab1
+        jnz lab1
+        mov ax,cx
+        ;判断是否可以被400整除
+        mov bx,400
+        div bx
+        cmp dx,0
+        ;若是闰年则跳转的lab2
+        jz lab2
+        ;清除标记位
+        clc
+        jmp lab3 
+        
+        ;判断是否可以被4整除
+        lab1:
+            mov ax,cx
+            mov dx,0
+            mov bx,4
+            div bx
+            cmp dx,0
+        ;可以被4整除所以跳转
+            jz lab2
+            clc
+            jmp lab3
+        lab2:stc
+        ;恢复寄存器
+        lab3:
+            pop dx
+            pop cx
+            pop bx
+            ret    
+        ifyears endp
+code ends
+    end start

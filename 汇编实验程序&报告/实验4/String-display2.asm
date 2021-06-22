@@ -1,0 +1,49 @@
+DATAS SEGMENT
+    BUF1 DB 'The School of Information Science and Engineering Shandong University!$'
+    COUNT EQU $-BUF1
+    BUF2 DB COUNT DUP(0)
+    MSG DB 'COPY COMPLETED!',13,10,'$'
+    MSGB DB 'COPY A STRING',13,10
+    	 DB 'PRESS ANY KEY TO START...'
+    	 DB 13,10,'$'
+DATAS ENDS
+
+CODES SEGMENT
+    ASSUME CS:CODES,DS:DATAS,ES:DATAS
+START:
+    MOV AX,DATAS
+    MOV DS,AX
+    MOV ES,AX
+
+
+    MOV AH,9
+    MOV DX, OFFSET MSGB
+    INT 21H
+    MOV AH,1
+    INT 21H
+
+	CALL COPY
+
+    MOV AH,9
+    
+    MOV DX, OFFSET MSG
+    INT 21H
+    MOV DX, OFFSET BUF2
+    INT 21H 
+    MOV AH,1
+    INT 21H   
+    MOV AH,4CH
+    INT 21H
+
+    COPY PROC
+
+    MOV SI,OFFSET BUF1
+    MOV DI,OFFSET BUF2
+    MOV CX,COUNT
+    CLD    
+    REP MOVSB 
+    RET
+    COPY ENDP 
+
+CODES ENDS
+    END START

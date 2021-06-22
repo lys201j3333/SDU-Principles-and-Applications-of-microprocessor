@@ -1,0 +1,51 @@
+C51 COMPILER V9.00   MAIN                                                                  06/15/2021 23:56:50 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: d:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include<reg51.h>
+   2          #include<stdio.h>
+   3          #define uchar unsigned char
+   4          #define uint unsigned int
+   5          uchar data a[32] _at_ 0x30; //设定数组a 的起始地址为30H
+   6          uint i _at_ 0x55; //将变量i 放在地址55H
+   7          //延时程序
+   8          void DelayMS(uint ms)
+   9          {
+  10   1      uchar t;
+  11   1      while(ms--) for(t=0;t<120;t++);
+  12   1      }
+  13          //主程序
+  14          void main()
+  15          {
+  16   1      SP=0x60; //设定堆栈指针位置
+  17   1      SCON=0x52;
+  18   1      TMOD=0x20;
+  19   1      TH1=0xf3;
+  20   1      TR1=1; //此行及以上3 行为PRINTF 函数所必须
+  21   1      for(i=0;i<32;i++)
+  22   1      {
+  23   2      a[i]=i;
+  24   2      printf("It is : %d now.\n",i); //打印程序执行的信息
+  25   2      DelayMS(20000);
+  26   2      }
+  27   1      while(1);
+  28   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     90    ----
+   CONSTANT SIZE    =     17    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

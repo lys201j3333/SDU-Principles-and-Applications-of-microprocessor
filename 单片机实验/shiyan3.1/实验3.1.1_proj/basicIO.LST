@@ -1,0 +1,40 @@
+A51 MACRO ASSEMBLER  BASICIO                                                              06/16/2021 09:41:57 PAGE     1
+
+
+MACRO ASSEMBLER A51 V8.01
+OBJECT MODULE PLACED IN basicIO.OBJ
+ASSEMBLER INVOKED BY: d:\Keil\C51\BIN\A51.EXE basicIO.asm SET(SMALL) DEBUG EP
+
+LOC  OBJ            LINE     SOURCE
+
+0000                   1       ORG 0000H
+0000 0130              2       AJMP MAIN
+0030                   3       ORG 0030H
+0030                   4     MAIN:
+0030 758160            5       MOV SP,#60H
+                       6     ; MOV P2,#0FFH
+0033                   7     LOOP:
+0033 7590FF            8       MOV P1,#0FFH
+0036 E590              9       MOV A,P1
+0038 F5A0             10       MOV P2,A
+003A 80F7             11       SJMP LOOP
+                      12       END
+A51 MACRO ASSEMBLER  BASICIO                                                              06/16/2021 09:41:57 PAGE     2
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES
+
+LOOP . . . . . . .  C ADDR   0033H   A   
+MAIN . . . . . . .  C ADDR   0030H   A   
+P1 . . . . . . . .  D ADDR   0090H   A   
+P2 . . . . . . . .  D ADDR   00A0H   A   
+SP . . . . . . . .  D ADDR   0081H   A   
+
+
+REGISTER BANK(S) USED: 0 
+
+
+ASSEMBLY COMPLETE.  0 WARNING(S), 0 ERROR(S)

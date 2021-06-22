@@ -1,0 +1,31 @@
+    #ORG表示块的起始地址
+    ORG 0000H
+    #AJMP无条件跳转，也就是所谓的绝对跳转
+        AJMP MAIN
+    ORG 0030H
+#MAIN函数
+MAIN:
+        #将45H送入30H寄存器
+        MOV 30H, #45H
+        #将30H中的值放入A寄存器
+        MOV A, 30H
+        #屏蔽A中的高四位
+        ANL A,#0FH
+        #将寄存器A的值放入偏移地址31H中
+        MOV 31H,A
+        #再将偏移地址30H的值放入A寄存器中
+        MOV A,30H
+        #屏蔽A中的低四位
+        ANL A, #0F0H
+        #将A中的高低四位交换
+        SWAP A
+        #
+        MOV B, #10
+        #MUL是无符号数乘法
+        MUL AB
+        #简单
+        ADD A,31H
+        MOV 31H,A
+        #防止程序乱跳
+        SJMP $
+        END

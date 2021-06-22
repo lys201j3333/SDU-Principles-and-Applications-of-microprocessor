@@ -1,0 +1,441 @@
+C51 COMPILER V9.00   MAIN                                                                  06/17/2021 10:06:42 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: d:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg51.h>                //头文件
+   2          #include <intrins.h>
+   3          #define uint unsigned int
+   4          #define uchar unsigned char
+   5          
+   6          sbit lcden = P1 ^ 5; //定义引脚
+   7          sbit rs = P1 ^ 7;
+   8          sbit rw = P1 ^ 6;
+   9          sbit busy = P0 ^ 7;
+  10          
+  11          char i, j, temp, num;
+  12          long a, b, c, d; 
+  13          float a_c, b_c;
+  14          uchar flag, op, p2_tmp; //flag表示是否有符号键按下，op表征按下的是哪个符号
+  15          
+  16          uchar code table[] = {
+  17                  0, 1, 2, 3,
+  18                  4, 5, 6, 7,
+  19                  8, 9, 0, 0,
+  20                  0, 0, 0, 0};
+  21          uchar code table1[] = {
+  22                  0, 1, 2, 3,
+  23                  4, 5, 6, 7,
+  24                  8, 9, 0x2b - 0x30, 0x2d - 0x30,
+  25                  0x2a - 0x30, 0x2f - 0x30, 0x01 - 0x30, 0x3d - 0x30};
+  26          uchar code table2[] = "!rorrE"; //第二行从右向左输出，因此用倒序
+  27          
+  28          void delay(uchar z) // 延迟函数
+  29          {
+  30   1              uchar y;
+  31   1              for (z; z > 0; z--)
+  32   1                      for (y = 0; y < 110; y++)
+  33   1                              ;
+  34   1      }
+  35          
+  36          void check() // 判断忙或空闲
+  37          {
+  38   1              do
+  39   1              {
+  40   2                      P2 = 0xFF;
+  41   2                      rs = 0;                  //指令
+  42   2                      rw = 1;                  //读
+  43   2                      lcden = 0;               //禁止读写
+  44   2                      delay(1);                //等待，液晶显示器处理数据
+  45   2                      lcden = 1;               //允许读写
+  46   2              } while (busy); //判断是否为空闲，1为忙，0为空闲
+  47   1      }
+  48          
+  49          void write_com(uchar com) // 写指令函数
+  50          {
+  51   1              P2 = com; //com指令付给P0口
+  52   1              rs = 0;
+  53   1              rw = 0;
+  54   1              lcden = 0;
+  55   1              check();
+C51 COMPILER V9.00   MAIN                                                                  06/17/2021 10:06:42 PAGE 2   
+
+  56   1              lcden = 1;
+  57   1      }
+  58          
+  59          void write_data(uchar data_) // 写数据函数
+  60          {
+  61   1              P2 = data_;
+  62   1              rs = 1;
+  63   1              rw = 0;
+  64   1              lcden = 0;
+  65   1              check();
+  66   1              lcden = 1;
+  67   1      }
+  68          
+  69          void init() //初始化
+  70          {
+  71   1              num = -1;
+  72   1              lcden = 1;               //使能信号为高电平
+  73   1              write_com(0x38); //8位，2行
+  74   1              write_com(0x0c); //显示开，光标关，不闪烁
+  75   1              write_com(0x06); //增量方式不移位
+  76   1              write_com(0x80); //检测忙信号
+  77   1              write_com(0x01); //显示开，光标关，不闪烁
+  78   1              i = 0;
+  79   1              j = 0;
+  80   1              a = 0; //第一个参与运算的数
+  81   1              b = 0; //第二个参与运算的数
+  82   1              c = 0; //运算结果
+  83   1              d = 0; //整除的余数
+  84   1              flag = 0;  //flag表示是否有符号键按下，
+  85   1              op = 0; // op表征按下的是哪个符号
+  86   1      }
+  87          
+  88          void keyscan() // 键盘扫描程序
+  89          {
+  90   1              P3 = 0xfe;
+  91   1              if (P3 != 0xfe)
+  92   1              {
+  93   2                      delay(20);
+  94   2                      if (P3 != 0xfe)
+  95   2                      {
+  96   3                              temp = P3 & 0xf0;
+  97   3                              switch (temp)
+  98   3                              {
+  99   4                              case 0xe0:
+ 100   4                                      num = 0;
+ 101   4                                      break;
+ 102   4                              case 0xd0:
+ 103   4                                      num = 1;
+ 104   4                                      break;
+ 105   4                              case 0xb0:
+ 106   4                                      num = 2;
+ 107   4                                      break;
+ 108   4                              case 0x70:
+ 109   4                                      num = 3;
+ 110   4                                      break;
+ 111   4                              }
+ 112   3                      }
+ 113   2                      while (P3 != 0xfe)
+ 114   2                              ;
+ 115   2                      if (flag == 0) //没有按过符号键
+ 116   2                      {
+ 117   3                              a = a * 10 + table[num];
+C51 COMPILER V9.00   MAIN                                                                  06/17/2021 10:06:42 PAGE 3   
+
+ 118   3                      }
+ 119   2                      else //如果按过符号键
+ 120   2                      {
+ 121   3                              b = b * 10 + table[num];
+ 122   3                      }
+ 123   2                      i = table1[num];
+ 124   2                      write_data(0x30 + i);
+ 125   2              }
+ 126   1      
+ 127   1              P3 = 0xfd;
+ 128   1              if (P3 != 0xfd)
+ 129   1              {
+ 130   2                      delay(5);
+ 131   2                      if (P3 != 0xfd)
+ 132   2                      {
+ 133   3                              temp = P3 & 0xf0;
+ 134   3                              switch (temp)
+ 135   3                              {
+ 136   4                              case 0xe0:
+ 137   4                                      num = 4;
+ 138   4                                      break;
+ 139   4      
+ 140   4                              case 0xd0:
+ 141   4                                      num = 5;
+ 142   4                                      break;
+ 143   4      
+ 144   4                              case 0xb0:
+ 145   4                                      num = 6;
+ 146   4                                      break;
+ 147   4      
+ 148   4                              case 0x70:
+ 149   4                                      num = 7;
+ 150   4                                      break;
+ 151   4                              }
+ 152   3                      }
+ 153   2                      while (P3 != 0xfd)
+ 154   2                              ;
+ 155   2                      if (flag == 0) //没有按过符号键
+ 156   2                      {
+ 157   3                              a = a * 10 + table[num];
+ 158   3                      }
+ 159   2                      else //如果按过符号键
+ 160   2                      {
+ 161   3                              b = b * 10 + table[num];
+ 162   3                      }
+ 163   2                      i = table1[num];
+ 164   2                      write_data(0x30 + i);
+ 165   2              }
+ 166   1      
+ 167   1              P3 = 0xfb;
+ 168   1              if (P3 != 0xfb)
+ 169   1              {
+ 170   2                      delay(5);
+ 171   2                      if (P3 != 0xfb)
+ 172   2                      {
+ 173   3                              temp = P3 & 0xf0;
+ 174   3                              switch (temp)
+ 175   3                              {
+ 176   4                              case 0xe0:
+ 177   4                                      num = 8;
+ 178   4                                      break;
+ 179   4      
+C51 COMPILER V9.00   MAIN                                                                  06/17/2021 10:06:42 PAGE 4   
+
+ 180   4                              case 0xd0:
+ 181   4                                      num = 9;
+ 182   4                                      break;
+ 183   4      
+ 184   4                              case 0xb0:
+ 185   4                                      num = 10;
+ 186   4                                      break;
+ 187   4      
+ 188   4                              case 0x70:
+ 189   4                                      num = 11;
+ 190   4                                      break;
+ 191   4                              }
+ 192   3                      }
+ 193   2                      while (P3 != 0xfb)
+ 194   2                              ;
+ 195   2                      if (num == 8 || num == 9) //如果按下的是'8','9'
+ 196   2                      {
+ 197   3                              if (flag == 0) //没有按过符号键
+ 198   3                              {
+ 199   4                                      a = a * 10 + table[num];
+ 200   4                              }
+ 201   3                              else //如果按过符号键
+ 202   3                              {
+ 203   4                                      b = b * 10 + table[num];
+ 204   4                              }
+ 205   3                      }
+ 206   2                      else if (num == 10) //如果按下的是'+'
+ 207   2                      {
+ 208   3                              flag = 1;
+ 209   3                              op = 1; //2表示加号已按
+ 210   3                      }
+ 211   2                      else if (num == 11) //如果按下的是'-'
+ 212   2                      {
+ 213   3                              flag = 1;
+ 214   3                              op = 2; //2表示减号已按
+ 215   3                      }
+ 216   2                      i = table1[num];
+ 217   2                      write_data(0x30 + i);
+ 218   2              }
+ 219   1      
+ 220   1              P3 = 0xf7;
+ 221   1              if (P3 != 0xf7)
+ 222   1              {
+ 223   2                      delay(5);
+ 224   2                      if (P3 != 0xf7)
+ 225   2                      {
+ 226   3                              temp = P3 & 0xf0;
+ 227   3                              switch (temp)
+ 228   3                              {
+ 229   4                              case 0xe0:
+ 230   4                                      num = 12;
+ 231   4                                      break;
+ 232   4      
+ 233   4                              case 0xd0:
+ 234   4                                      num = 13;
+ 235   4                                      break;
+ 236   4      
+ 237   4                              case 0xb0:
+ 238   4                                      num = 14;
+ 239   4                                      break;
+ 240   4      
+ 241   4                              case 0x70:
+C51 COMPILER V9.00   MAIN                                                                  06/17/2021 10:06:42 PAGE 5   
+
+ 242   4                                      num = 15;
+ 243   4                                      break;
+ 244   4                              }
+ 245   3                      }
+ 246   2                      while (P3 != 0xf7)
+ 247   2                              ;
+ 248   2                      switch (num)
+ 249   2                      {
+ 250   3                              case 12:
+ 251   3                              {
+ 252   4                                      write_data(0x30 + table1[num]);
+ 253   4                                      flag = 1;
+ 254   4                                      op = 3;
+ 255   4                              }
+ 256   3                              break;
+ 257   3                              case 13:
+ 258   3                              {
+ 259   4                                      write_data(0x30 + table1[num]);
+ 260   4                                      flag = 1;
+ 261   4                                      op = 4;
+ 262   4                              }
+ 263   3                              break;
+ 264   3                              case 14:
+ 265   3                              {
+ 266   4                                      write_com(0x01);
+ 267   4                                      i = 0;
+ 268   4                                      j = 0;
+ 269   4                                      a = 0;
+ 270   4                                      b = 0;
+ 271   4                                      c = 0;
+ 272   4                                      d = 0;
+ 273   4                                      flag = 0;
+ 274   4                                      op = 0;
+ 275   4                              } //按下的是"清零"
+ 276   3                              break;
+ 277   3                              case 15:
+ 278   3                              {
+ 279   4                                      j = 1;
+ 280   4                                      if (op == 1)
+ 281   4                                      {
+ 282   5                                              write_com(0x80 + 0x4f); //按下等于键，光标前进至第二行最后一个显示处
+ 283   5                                              write_com(0x04);                //设置从后往前写数据，每写完一个数据，光标后退一格
+ 284   5                                              c = a + b;
+ 285   5                                              while (c != 0)
+ 286   5                                              {
+ 287   6                                                      write_data(0x30 + c % 10);
+ 288   6                                                      c = c / 10;
+ 289   6                                              }
+ 290   5                                              write_data(0x3d); //再写"="
+ 291   5                                              a = 0;
+ 292   5                                              b = 0;
+ 293   5                                              flag = 0;
+ 294   5                                              op = 0;
+ 295   5                                      }
+ 296   4                                      else if (op == 2)
+ 297   4                                      {
+ 298   5                                              write_com(0x80 + 0x4f); //光标前进至第二行最后一个显示处
+ 299   5                                              write_com(0x04);                //设置从后往前写数据，每写完一个数据，光标后退一格)
+ 300   5                                              if (a - b > 0)
+ 301   5                                                      c = a - b;
+ 302   5                                              else
+ 303   5                                                      c = b - a;
+C51 COMPILER V9.00   MAIN                                                                  06/17/2021 10:06:42 PAGE 6   
+
+ 304   5                                              while (c != 0)
+ 305   5                                              {
+ 306   6                                                      write_data(0x30 + c % 10);
+ 307   6                                                      c = c / 10;
+ 308   6                                              }
+ 309   5                                              if (a - b < 0)
+ 310   5                                                      write_data(0x2d);
+ 311   5                                              write_data(0x3d); //再写"="
+ 312   5                                              a = 0;
+ 313   5                                              b = 0;
+ 314   5                                              flag = 0;
+ 315   5                                              op = 0;
+ 316   5                                      }
+ 317   4                                      else if (op == 3)
+ 318   4                                      {
+ 319   5                                              write_com(0x80 + 0x4f);
+ 320   5                                              write_com(0x04);
+ 321   5                                              c = a * b;
+ 322   5                                              while (c != 0)
+ 323   5                                              {
+ 324   6                                                      write_data(0x30 + c % 10);
+ 325   6                                                      c = c / 10;
+ 326   6                                              }
+ 327   5                                              write_data(0x3d);
+ 328   5                                              a = 0;
+ 329   5                                              b = 0;
+ 330   5                                              flag = 0;
+ 331   5                                              op = 0;
+ 332   5                                      }
+ 333   4                                      else if (op == 4)
+ 334   4                                      {
+ 335   5                                              write_com(0x80 + 0x4f);
+ 336   5                                              write_com(0x04);
+ 337   5                                              if (b == 0) //除数为零
+ 338   5                                              {
+ 339   6                                                      i = 0;
+ 340   6                                                      while (table2[i] != '\0')
+ 341   6                                                      {
+ 342   7                                                              write_data(table2[i]);
+ 343   7                                                              i++;
+ 344   7                                                      } //输出错误信息
+ 345   6                                                      a = 0;
+ 346   6                                                      b = 0;
+ 347   6                                                      flag = 0;
+ 348   6                                                      op = 0;
+ 349   6                                              }
+ 350   5                                              else if ((a % b == 0) && (b != 0)) //可以整除
+ 351   5                                              {
+ 352   6                                                      c = a / b;
+ 353   6                                                      while (c != 0)
+ 354   6                                                      {
+ 355   7                                                              write_data(0x30 + c % 10);
+ 356   7                                                              c = c / 10;
+ 357   7                                                      } //输出商
+ 358   6                                                      if (a / b <= 0)
+ 359   6                                                              write_data(0x30);
+ 360   6                                                      write_data(0x3d);
+ 361   6                                                      a = 0;
+ 362   6                                                      b = 0;
+ 363   6                                                      flag = 0;
+ 364   6                                                      op = 0;
+ 365   6                                              }
+C51 COMPILER V9.00   MAIN                                                                  06/17/2021 10:06:42 PAGE 7   
+
+ 366   5                                              else if ((a % b != 0) && (b != 0)) //不能整除
+ 367   5                                              {
+ 368   6                                                      d = a % b;
+ 369   6                                                      while (d != 0)
+ 370   6                                                      {
+ 371   7                                                              write_data(0x30 + d % 10);
+ 372   7                                                              d = d / 10;
+ 373   7                                                      } //输出余数
+ 374   6                                                      write_data(0x2e);
+ 375   6                                                      write_data(0x2e);
+ 376   6                                                      write_data(0x2e); //三个点分隔
+ 377   6                                                      c = a / b;
+ 378   6                                                      while (c != 0)
+ 379   6                                                      {
+ 380   7                                                              write_data(0x30 + c % 10);
+ 381   7                                                              c = c / 10;
+ 382   7                                                      }
+ 383   6                                                      if (a / b <= 0)
+ 384   6                                                              write_data(0x30);
+ 385   6                                                      write_data(0x3d);
+ 386   6                                                      a = 0;
+ 387   6                                                      b = 0;
+ 388   6                                                      flag = 0;
+ 389   6                                                      op = 0;
+ 390   6                                              }
+ 391   5                                      }
+ 392   4                              }
+ 393   3                              break;
+ 394   3                      }
+ 395   2              }
+ 396   1      }
+ 397          
+ 398          int main(void)
+ 399          {
+ 400   1              init();
+ 401   1              while (1)
+ 402   1              {
+ 403   2                      keyscan();
+ 404   2              }
+ 405   1              return 0;
+ 406   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   2002    ----
+   CONSTANT SIZE    =     39    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     31    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,63 @@
+DATAS SEGMENT
+   BUF1 DB 13,10,'THE Number is ','$' 
+DATAS ENDS
+STACKS SEGMENT STACK
+   DB 100 DUP(0)
+STACKS ENDS
+CODES SEGMENT
+   ASSUME DS:DATAS,SS:STACKS,CS:CODES
+
+START:
+   MOV AX,DATAS
+   MOV DS,AX
+
+   ;显示提示字符串
+   LEA DX BUF1
+   MOV AH,9
+   INT 21H
+
+   MOV AX,0
+   MOV DS,AX 
+   ;把中断号86H的地址赋给BX
+   MOV BX,86H*4
+   ;禁止中断发生
+   CLI 
+   ;进行字操作.将MAKERAND的偏移地址存入ES:BX 
+   MOV WORD PTR DS:[BX],OFFSET NUMBER
+   ;进行字操作.将MAEKRAND的段基地址存入ES:[BX+2]
+   MOV WORD PTR DS:[BX+2],SEG NUMBER
+   ;允许中断发生  
+   STI 
+   ;调用86H
+   INT 86H  ;调用86,NUMBER子程序
+
+   MOV AH,4CH
+   INT 21H  
+
+NUMBER PROC
+   ;备份
+   PUSH CX
+   PUSH DX 
+
+   MOV AH,0
+   INT 1AH   ;读时钟计数器值.CX:DX存着计数器值
+
+   ;一位数只保留低16位，DX赋值成0
+   MOV AX,DX 
+   MOV DX,0
+   MOV BX,10
+   DIV BX
+   ;转换成ASCII码
+   ADD DL,30H
+
+   MOV AH,02H
+   INT 21H 
+
+   ;恢复数据
+   POP DX
+   POP CX 
+   IRET     
+NUMBER ENDP  
+
+CODES ENDS
+END START

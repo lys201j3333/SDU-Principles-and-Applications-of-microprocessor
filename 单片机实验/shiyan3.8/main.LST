@@ -1,0 +1,265 @@
+C51 COMPILER V9.00   MAIN                                                                  06/17/2021 09:41:27 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: d:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg51.h>
+   2          #include <intrins.h>
+   3          #define uint unsigned int
+   4          #define uchar unsigned char
+   5          uchar data line_data[16];
+   6          uchar code numchar[] = "0123456789";
+   7          sbit LCD_RS = P2 ^ 0;
+   8          sbit LCD_RW = P2 ^ 1;
+   9          sbit LCD_EN = P2 ^ 2;
+  10          sbit AD_CLK = P2 ^ 3;
+  11          sbit Start = P2 ^ 4;
+  12          sbit OE = P2 ^ 5;
+  13          sbit Out_pulse = P2 ^ 6;
+  14          sbit EOC = P2 ^ 7;
+  15          uint tmpint, number, c;
+  16          uchar samp_data, tmpchar, n, t, a, b, d, p1_tmp;
+  17          
+  18          void delay_ms(uint xms)
+  19          { //ÑÓÊ±×Ó³ÌÐò
+  20   1              uint j;
+  21   1              while (xms--)
+  22   1                      for (j = 110; j > 0; j--)
+  23   1                              ;
+  24   1      }
+  25          
+  26          bit lcd_busy()
+  27          { //LCDÃ¦¼ì²é×Ó³ÌÐò£¬×î¸ßÎ»BF=1±íÊ¾Òº¾§ÏÔÊ¾Æ÷Ã¦£¬ÔÝÊ±ÎÞ·¨½ÓÊÕµ¥Æ¬»úËÍÀ´µÄÊý¾Ý»òÖ¸Áî
+  28   1              bit flag;
+  29   1              p1_tmp = P1;//±£»¤P1¿ÚµÄÖµ£¬·ÀÖ¹Æä±»ÐÞ¸Ä£¨ÍÆ²âÊÇProteus8µÄÎÊÌâ£©
+  30   1              LCD_RS = 0;
+  31   1              LCD_RW = 1;
+  32   1              LCD_EN = 1;
+  33   1              _nop_(); //Èç¹ûµ¥Æ¬»úµÄ¾§ÕñÊÇ12M£¬Ôòµ÷ÓÃ_nop_()ÓÃÓÚÑÓÊ±1us
+  34   1              _nop_();
+  35   1              _nop_();
+  36   1              _nop_();
+  37   1              flag = (bit)(P1 & 0x80); //·µ»Ø×î¸ßÎ»BF´ú±íÊÇ·ñÃ¦£¬Ã¦flag=1£¬²»Ã¦flag=0
+  38   1              LCD_EN = 0;
+  39   1              P1 = p1_tmp;
+  40   1              return flag;
+  41   1      }
+  42          
+  43          //Ð´ÃüÁî×Ó³ÌÐò
+  44          void lcd_wcmd(uchar cmd)
+  45          {
+  46   1              while (lcd_busy());
+  47   1              LCD_RS = 0;
+  48   1              LCD_RW = 0;
+  49   1              LCD_EN = 0;
+  50   1              _nop_();
+  51   1              _nop_();
+  52   1              P1 = cmd; //P1¿Ú´«ÊäÃüÁîµ½LCD1602
+  53   1              _nop_();
+  54   1              _nop_();
+  55   1              _nop_();
+C51 COMPILER V9.00   MAIN                                                                  06/17/2021 09:41:27 PAGE 2   
+
+  56   1              _nop_();
+  57   1              LCD_EN = 1;
+  58   1              _nop_();
+  59   1              _nop_();
+  60   1              _nop_();
+  61   1              _nop_();
+  62   1              LCD_EN = 0; //ÏÂ½µÑØÂö³å
+  63   1      }
+  64          
+  65          void lcd_clr()
+  66          {
+  67   1              lcd_wcmd(0x01); //ÇåÆÁÃüÁî
+  68   1              delay_ms(2);    //ÇåÆÁÃüÁîÐèÒª1.64msÒÔÉÏ
+  69   1      }
+  70          
+  71          //Ð´Êý¾Ý×Ó³ÌÐò
+  72          void lcd_wdat(uchar dat)
+  73          {
+  74   1              while (lcd_busy());
+  75   1              LCD_RS = 1;
+  76   1              LCD_RW = 0;
+  77   1              LCD_EN = 0;
+  78   1              _nop_();
+  79   1              _nop_();
+  80   1              P1 = dat; //P1¿Ú´«ÊäÊý¾Ýµ½LCD1602
+  81   1              _nop_();
+  82   1              _nop_();
+  83   1              _nop_();
+  84   1              _nop_();
+  85   1              LCD_EN = 1;
+  86   1              _nop_();
+  87   1              _nop_();
+  88   1              _nop_();
+  89   1              _nop_();
+  90   1              LCD_EN = 0; //ÏÂ½µÑØÂö³å
+  91   1      }
+  92          
+  93          void lcd_init()
+  94          {
+  95   1              delay_ms(5);    //µÈ´ýLCDµçÔ´ÎÈ¶¨
+  96   1              lcd_wcmd(0x01); //Çå³ýLCDÏÔÊ¾ÄÚÈÝ
+  97   1              delay_ms(5);
+  98   1              lcd_wcmd(0x06); //ÒÆ¶¯¹â±ê
+  99   1              delay_ms(5);
+ 100   1              lcd_wcmd(0x0c); //ÏÔÊ¾¿ª£¬¹Ø¹â±ê£¬²»ÉÁË¸
+ 101   1              delay_ms(5);
+ 102   1              lcd_wcmd(0x38); //8Î»Êý¾Ý×ÜÏß£¬2ÐÐ£¬5*7µãÕóÃ¿×Ö·û
+ 103   1              delay_ms(15);
+ 104   1      }
+ 105          
+ 106          void showstring()
+ 107          {
+ 108   1              uchar i = 0;
+ 109   1              lcd_wcmd(0x80); //ÉèÖÃÏÔÊ¾Î»ÖÃÎªµÚ1ÐÐµÚ0ÁÐ
+ 110   1              while (line_data[i] != '\0')
+ 111   1              {
+ 112   2                      lcd_wdat(line_data[i]);
+ 113   2                      delay_ms(5);
+ 114   2                      i++;
+ 115   2              }
+ 116   1      }
+ 117          
+C51 COMPILER V9.00   MAIN                                                                  06/17/2021 09:41:27 PAGE 3   
+
+ 118          void s_timer0() interrupt 1
+ 119          { //¶¨Ê±Æ÷T0ÊµÏÖÖÐ¶Ï£¬Íê³É50ms¶¨Ê±
+ 120   1              t++;
+ 121   1              TH0 = 0x3c; //T0²ÉÓÃ·½Ê½1£¬ÐèÒªÖØ×°³õÖµ
+ 122   1              TL0 = 0xb0;
+ 123   1      }
+ 124          
+ 125          void s_timer1() interrupt 3
+ 126          { //¶¨Ê±Æ÷T1ÊµÏÖÖÐ¶Ï£¬Îª50kHz
+ 127   1              AD_CLK = ~AD_CLK; //È¡·´
+ 128   1      }
+ 129          
+ 130          void sample()
+ 131          {
+ 132   1              TR0 = 0; //¹Ø±Õ¶¨Ê±Æ÷T0ÖÐ¶Ï£¬±ÜÃâ¸Ã×Ó³ÌÐò¶Ô²É¼¯¾«¶ÈµÄÓ°Ïì£¬ÒòÎª´Ë×Ó³ÌÐòÊÇÓÃÓÃÓÚ´¦Àí²É¼¯½á¹ûµÄ
+ 133   1              if (samp_data > 128 && b == 0)
+ 134   1              {       //´Ë´¦ÒýÈë±äÁ¿a,bÓÃÀ´ÕÒ³öÁãµã£¬¼ÙÈçµÚÒ»´Î²É¼¯½á¹ûsamp_data´óÓÚ128£¬Ôò²É¼¯½á¹ûÎªÕýÊý£¬Ôòb¸³1£¬µ±ÏÂÒ»´Î²É
+             -¼¯½á¹ûÓÃÓÚ´Ë´¦ÅÐ¶ÏÊ±Ò»¶¨²»»áÖ´ÐÐÅÐ¶Ïºó
+ 135   2                      //µÄÖ¸Áî£¬ÒòÎªÖ»ÓÐµ±b = 0Ê±²Å»áÖ´ÐÐÕâ¸öÅÐ¶Ï£»¶øÏÂÒ»¸öÅÐ¶ÏÈ´¿ÉÒÔ½«b¸³Îª0£¬Ö´ÐÐÏÂÒ»¸öÅÐ¶Ï£¬²É¼¯½á¹û±ØÐëÎª¸
+             -º£¬ÓÉ´ËÊµÏÖ¶ÔÁãµãµÄ¼ÆÊý
+ 136   2                      number++;
+ 137   2                      a = 0;
+ 138   2                      b = 1;
+ 139   2                      Out_pulse = 1; //ÐÅºÅ¹ýÁãµã£¬²úÉú5usÂö³åÐÅºÅ
+ 140   2                      _nop_();
+ 141   2                      _nop_();
+ 142   2                      _nop_();
+ 143   2                      _nop_();
+ 144   2                      _nop_();
+ 145   2                      Out_pulse = 0;
+ 146   2              }
+ 147   1              else if (samp_data <= 128 && a == 0)
+ 148   1              {
+ 149   2                      number++;
+ 150   2                      a = 1;
+ 151   2                      b = 0;
+ 152   2                      Out_pulse = 1; //ÐÅºÅ¹ýÁãµã£¬²úÉú5usÂö³åÐÅºÅ
+ 153   2                      _nop_();
+ 154   2                      _nop_();
+ 155   2                      _nop_();
+ 156   2                      _nop_();
+ 157   2                      _nop_();
+ 158   2                      Out_pulse = 0;
+ 159   2              }
+ 160   1              TR0 = 1; //´ò¿ª¶¨Ê±Æ÷T0ÖÐ¶Ï
+ 161   1      }
+ 162          
+ 163          int main(void)
+ 164          {
+ 165   1              delay_ms(10);
+ 166   1              lcd_init(); //³õÊ¼»¯
+ 167   1              lcd_clr();      //ÇåÆÁ
+ 168   1              delay_ms(2);
+ 169   1              t = 0;
+ 170   1              a = 0;
+ 171   1              b = 0;
+ 172   1              n = 0;
+ 173   1              line_data[n++] = 'f'; //ÏÈ½«ÒªÔÚLCD1602ÉÏÊä³öµÄ×Ö·û´®µÄÇ°Èý¸öÖµ¸³Îª'f£º'
+ 174   1              line_data[n++] = ':';
+ 175   1              line_data[n++] = ' ';
+ 176   1              Out_pulse = 0;
+ 177   1              number = 0;
+C51 COMPILER V9.00   MAIN                                                                  06/17/2021 09:41:27 PAGE 4   
+
+ 178   1              AD_CLK = 0;
+ 179   1              OE = 0;          //¹Ø±ÕADC0808µÄÊä³öÊ¹ÄÜ
+ 180   1              TMOD = 0x21; //T0¹¤×÷ÔÚ·½Ê½1£¬T1¹¤×÷ÔÚ·½Ê½2,T1²»ÐèÒªÖØ×°³õÖµ
+ 181   1              TH1 = 0xF6;      //T1 50kHz
+ 182   1              TL1 = 0xF6;
+ 183   1              TH0 = 0x3C; //T050ms¶¨Ê±
+ 184   1              TL0 = 0xB0;
+ 185   1              EA = 1; //´ò¿ªÖÐ¶Ï×Ü¿ª¹Ø£¬ÏÂÃæ¾ÍÊÇ´ò¿ª¶¨Ê±Æ÷T0ÖÐ¶Ï£¬¶¨Ê±Æ÷T1ÖÐ¶Ï
+ 186   1              ET0 = 1;
+ 187   1              TR0 = 1;
+ 188   1              ET1 = 1;
+ 189   1              TR1 = 1;
+ 190   1              while (1)
+ 191   1              {
+ 192   2                      Start = 1; //Æô¶¯AD
+ 193   2                      Start = 0; //Æô¶¯ÐÅºÅ½áÊø
+ 194   2                      while (EOC != 1)
+ 195   2                              ;       //EOC×ª»»½áÊøÎª1
+ 196   2                      OE = 1; //´ò¿ªADC0808µÄÊä³öÊ¹ÄÜ
+ 197   2                      P0 = 0xff;
+ 198   2                      samp_data = P0; //²É¼¯
+ 199   2                      OE = 0;                 //¹Ø±ÕADC0808µÄÊä³öÊ¹ÄÜ
+ 200   2                      sample();               //´¦Àí²É¼¯½á¹û
+ 201   2                      if (t >= 9)
+ 202   2                      {                        //ÆµÂÊµÈÓÚ1sÄÚµÄÁãµãÊý³ý2£¬µ«ÊÇ¿¼ÂÇµ½³ý2¿ÉÄÜ»á²úÉúÓàÊý£¬ËùÒÔ´Ë´¦¼ÇÂ¼µÄ0.5sµÄÁãµãÊý£¬ÆµÂÊ¾ÍÖ±½ÓµÈÓÚ0
+             -.5sµÄÁãµãÊý
+ 203   3                              TR0 = 0; //¹Ø±Õ¶¨Ê±Æ÷T0ÖÐ¶Ï£¬±ÜÃâ¸Ã²½Öè¶Ô²É¼¯¾«¶ÈµÄÓ°Ïì£¬ÒòÎª´Ë²½ÖèÊÇÓÃÓÚ¼ÆËãÆµÂÊ
+ 204   3                              t = 0;
+ 205   3                              tmpint = number;
+ 206   3                              number = 0;
+ 207   3                              n = 3; //Ç°ÃæÊä³ö×Ö·û´®ÖÐÒÑ¾­ÏÈ¸³ÖµÁËÇ°Èý¸ö×Ö·û£¬´Ë´¦Òª´ÓµÚËÄ¸ö×Ö·û¿ªÊ¼¸³Öµ
+ 208   3                              d = 0;
+ 209   3                              a = 0;
+ 210   3                              b = 0;
+ 211   3                              c = 100;
+ 212   3                              while (c != 0)
+ 213   3                              {
+ 214   4                                      tmpchar = (uchar)(tmpint / c);
+ 215   4                                      tmpint = tmpint - (uint)tmpchar * c;
+ 216   4                                      c /= 10;
+ 217   4                                      if (tmpchar != 0) //Êä³ö¼ÆËãµÃµ½µÄÆµÂÊ£¬´Ë´¦tmpcharÎªÏÔÊ¾µÄÊý¾Ý£¬ÎªÁË±ÜÃâÊä³ö¶àÓàµÄÁãÔÚ×îÖÕÊä³öÊý¾ÝÇ°Ã
+             -æ£¬ËùÒÔÒýÈëÁËdÓÃÓÚ±ê¼ÇÓÐÐ§Êý×Ö
+ 218   4                                              d = 1;
+ 219   4                                      if (d != 0)
+ 220   4                                              line_data[n++] = numchar[tmpchar];
+ 221   4                              }
+ 222   3                              line_data[n++] = 'H';
+ 223   3                              line_data[n++] = 'z';
+ 224   3                              line_data[n] = '\0'; //½«×Ö·û´®²¹³äÍêÕû
+ 225   3                              
+ 226   3                              showstring();
+ 227   3                              TR0 = 1; //´ò¿ª¶¨Ê±Æ÷T0ÖÐ¶Ï
+ 228   3                      }
+ 229   2              }
+ 230   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    543    ----
+   CONSTANT SIZE    =     11    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+C51 COMPILER V9.00   MAIN                                                                  06/17/2021 09:41:27 PAGE 5   
+
+   DATA SIZE        =     30    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

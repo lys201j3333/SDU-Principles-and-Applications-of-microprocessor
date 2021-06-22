@@ -1,0 +1,147 @@
+DATAS SEGMENT
+   BUF1 DB 10,13,'PLEASE INPUT SCORES:','$'
+   SCORE6 DB 10,13,'SCORE6:','$'
+   SCORE7 DB 10,13,'SCORE7:','$'
+   SCORE8 DB 10,13,'SCORE8:','$'
+   SCORE9 DB 10,13,'SCORE9:','$'
+   SCORE10 DB 10,13,'SCORE10:','$'
+   SCOREOUT DB 10,13,'OSOCRE:','$'
+   SSCORE6 DB 30H
+   SSCORE7 DB 30H
+   SSCORE8 DB 30H
+   SSCORE9 DB 30H
+   SSCORE10 DB 30H
+   OUTSCORE DB 30H
+DATAS ENDS
+STACKS SEGMENT
+   DB 300 DUP(0)
+STACKS ENDS
+CODES SEGMENT
+   ASSUME CS:CODES,DS:DATAS,SS:STACKS 
+START:
+   MOV AX,DATAS
+   MOV DS,AX
+   MOV AH,9
+
+   LEA DX,BUF1
+   INT 21H
+
+   MOV CX,10 
+INPUT: MOV AH,1
+   INT 21H
+   ;调用程序进行比较，因为仅凭十位就可以确定区间了
+   CALL COMPARE
+   ;输入第二个数，就和分析的一样实际上是没用的，为了好看吧……反正
+   INT 21H
+   ;显示空格
+   MOV AH,2
+   MOV DL,32
+   INT 21H  
+   ;循环输入每一个成绩
+   LOOP INPUT ;循环输入每一个成绩
+   CALL OUTPUT;调用子程序进行输出
+   MOV AH,4CH
+   INT 21H    ;程序结束
+;比较最高位数值的子程序
+COMPARE PROC
+   PUSH AX
+   ;如果最高位等于1（这里实际上忽略了百分位）则跳转到s10
+   CMP AL,31H 
+   JZ S10
+   ;以下都同上
+   CMP AL,36H    
+   JZ S6
+   CMP AL,37H
+   JZ S7 
+   CMP AL,38H  
+   JZ S8    
+   CMP AL,39H    
+   JZ S9    
+   JMP S0 
+
+;计数   
+S0:
+   ADD [OUTSCORE],1 
+   JMP exit
+S6:
+   ADD [SSCORE6],1  
+   JMP exit
+S7:
+   ADD [SSCORE7],1  
+   JMP exit
+S8:
+   ADD [SSCORE8],1  
+   JMP exit
+S9:
+   ADD [SSCORE9],1
+   JMP exit
+S10:
+   ADD [SSCORE10],1 
+   MOV AH,1
+   INT 21H
+
+exit:POP AX
+   RET  
+COMPARE ENDP
+
+;定义子程序OUTPUT
+OUTPUT PROC  
+   ;针对6开头的输出
+   LEA DX,SCORE6     ;输出提示
+   MOV AH,9
+   INT 21H 
+
+   MOV DL,[SSCORE6] ;输出个数
+   MOV AH,2
+
+   INT 21H                   ;回车
+   MOV DL,10
+   INT 21H  
+
+   ;以下均同上
+   LEA DX,SCORE7
+   MOV AH,9
+   INT 21H   
+   MOV DL,[SSCORE7]
+   MOV AH,2
+   INT 21H  
+   MOV DL,10
+   INT 21H     
+
+   LEA DX,SCORE8
+   MOV AH,9
+   INT 21H   
+   MOV DL,[SSCORE8]
+   MOV AH,2
+   INT 21H 
+   MOV DL,10
+   INT 21H    
+
+   LEA DX,SCORE9
+   MOV AH,9
+   INT 21H  
+   MOV DL,[SSCORE9]
+   MOV AH,2
+   INT 21H  
+   MOV DL,10
+   INT 21H   
+
+   LEA DX,SCORE10
+   MOV AH,9
+   INT 21H  
+   MOV DL,[SSCORE10]
+   MOV AH,2
+   INT 21H  
+   MOV DL,10
+   INT 21H    
+
+   LEA DX,SCOREOUT
+   MOV AH,9
+   INT 21H   
+   MOV DL,[OUTSCORE]
+   MOV AH,2
+   INT 21H  
+RET     
+OUTPUT ENDP 
+CODES ENDS
+   END START

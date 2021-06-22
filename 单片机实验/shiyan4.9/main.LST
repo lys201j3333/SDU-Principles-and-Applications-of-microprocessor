@@ -1,0 +1,122 @@
+C51 COMPILER V9.00   MAIN                                                                  06/17/2021 20:13:10 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: d:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg51.h>
+   2          #include <intrins.h>
+   3          #define uint unsigned int
+   4          #define uchar unsigned char
+   5          #define LCD_Data P1
+   6          sbit LCD_RS = P0 ^ 3;
+   7          sbit LCD_WR = P0 ^ 2;
+   8          sbit LCD_EN = P0 ^ 1;
+   9          sbit PSB = P0 ^ 0;
+  10          uchar code name[] = "李禹申";
+  11          uchar code number[] = "201900120123";
+  12          uchar code a[] = "123";
+  13          
+  14          /**********************************延时子程序**********************/
+  15          void delay_ms(uint xms)
+  16          {
+  17   1          uint j;
+  18   1          while (xms--)
+  19   1              for (j = 110; j > 0; j--);
+  20   1      }
+  21          
+  22          void Write_Data(uchar dat)
+  23          {
+  24   1          LCD_EN = 0;
+  25   1          LCD_WR = 0; //选择写模式
+  26   1          LCD_RS = 1; //选择数据模式
+  27   1          //延时
+  28   1          delay_ms(1);
+  29   1          //将数据准备
+  30   1          LCD_Data = dat;
+  31   1          LCD_EN = 1;
+  32   1          _nop_();
+  33   1          _nop_();
+  34   1          LCD_EN = 0;  //表示开始写入数据,下降沿写入数据
+  35   1          delay_ms(2); //延时等待数据全部发送完成
+  36   1      }
+  37          
+  38          //向12864中写入命令
+  39          void Write_Com(uchar com)
+  40          {
+  41   1          //首先我们设置片选信号
+  42   1          LCD_WR = 0; //选择写模式
+  43   1          LCD_RS = 0; //选择命令模式
+  44   1          //延时
+  45   1          delay_ms(1);
+  46   1          //将数据准备
+  47   1          LCD_Data = com;
+  48   1          LCD_EN = 1; //片选信号一般设置为0表示片选
+  49   1          _nop_();
+  50   1          _nop_();
+  51   1          LCD_EN = 0;  //表示开始写入数据,下降沿写入命令
+  52   1          delay_ms(2); //延时等待数命令全部发送完成
+  53   1      }
+  54          
+  55          //对LCD12864进行初始化
+C51 COMPILER V9.00   MAIN                                                                  06/17/2021 20:13:10 PAGE 2   
+
+  56          void InitLCD()
+  57          {
+  58   1          PSB = 1; //并口方式
+  59   1          LCD_WR = 0;
+  60   1          LCD_EN = 0;
+  61   1          Write_Com(0x30); //设置为8位并行口，基本指令集动作
+  62   1          Write_Com(0x08); //整体显示关，游标关，游标位置关
+  63   1          Write_Com(0x01); //清除LCD的显示内容
+  64   1          Write_Com(0x06); //显示光标右移，DDRAM位地址加一，画面不移动
+  65   1          Write_Com(0x0c); //开显示，关光标
+  66   1      }
+  67          
+  68          //汉字一行能显示8个，字符能显示16个
+  69          /*
+  70          第一行：0x80 -> 0x87
+  71          第二行：0x90 -> 0x97
+  72          第三行：0x88 -> 0x8f
+  73          第四行：0x98 -> 0x9f
+  74          */
+  75          unsigned char pos[] = {0x80, 0x90, 0x88, 0x98};
+  76          
+  77          void Display(uchar x, uchar y, uchar code *str)
+  78          {
+  79   1          uchar i;
+  80   1          //写入地址
+  81   1          Write_Com(pos[x] + y);
+  82   1          //写入数据
+  83   1          for (i = 0; str[i] != '\0'; i++)
+  84   1              Write_Data(str[i]);
+  85   1      }
+  86          
+  87          int main(void)
+  88          {
+  89   1          //液晶初始化
+  90   1          InitLCD();
+  91   1          while (1)
+  92   1          {
+  93   2              Display(0, 0, name); //名字写在第一行
+  94   2              Display(1, 0, number); //学号写在第二行
+  95   2                      Display(2, 0, a);
+  96   2          }
+  97   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    195    ----
+   CONSTANT SIZE    =     24    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      4       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,116 @@
+A51 MACRO ASSEMBLER  MAIN                                                                 06/15/2021 23:10:32 PAGE     1
+
+
+MACRO ASSEMBLER A51 V8.01
+OBJECT MODULE PLACED IN main.OBJ
+ASSEMBLER INVOKED BY: d:\Keil\C51\BIN\A51.EXE main.asm SET(SMALL) DEBUG EP
+
+LOC  OBJ            LINE     SOURCE
+
+0000                   1     ORG 0000H
+0000 2100              2     AJMP MAIN
+0100                   3     ORG 0100H
+0100                   4     MAIN:
+0100 758162            5     MOV SP,#62H
+0103 7400              6     MOV A,#0H
+0105 7930              7     MOV R1,#30H
+                       8     ;ªª≥… ÆΩ¯÷∆µƒ31
+0107 7F20              9     MOV R7,#20H
+0109 900030           10     MOV DPTR,#TABLE
+                      11     ;“…ªÛ£∫’‚R4∏…¬Ôµƒ
+010C 7C1F             12     MOV R4,#1FH
+010E                  13     LOOP1:
+                      14     ;MOVC «≤È±Ì÷∏¡Ó
+010E 93               15     MOVC A,@A+DPTR
+010F F7               16     MOV @R1,A
+0110 09               17     INC R1
+0111 A3               18     INC DPTR
+0112 7400             19     MOV A,#0H
+                      20     ; ‰»Î32∏ˆ 
+0114 DFF8             21     DJNZ R7,LOOP1
+0116                  22     LOOP2: 
+                      23     ;«Â≥ΩËŒª±Í÷æŒª
+0116 C3               24     CLR C
+0117 741F             25     MOV A,#1FH
+0119 9C               26     SUBB A,R4
+011A 2430             27     ADD A,#30H
+                      28     ;¡ÓR1¥”∏√—≠ª∑µ⁄“ª∏ˆ ø™ ºº∆À„
+011C F9               29     MOV R1,A
+011D EC               30     MOV A,R4
+                      31     ; πR2Œ™º∆À„¥Œ 
+011E FA               32     MOV R2,A
+011F E9               33     MOV A,R1
+                      34     ;…Ë÷√∏√—≠ª∑≥ı º÷µ
+0120 F8               35     MOV R0,A
+0121                  36     LOOP3:
+0121 C3               37     CLR C
+0122 E7               38     MOV A,@R1
+                      39     ;R3÷–¥Ê»ÎR1À˘÷∏ æ›
+0123 FB               40     MOV R3,A
+0124 E8               41     MOV A,R0 
+                      42     ;±»ΩœR0”ÎR1µƒ¥Û–°
+0125 99               43     SUBB A,R1
+                      44     ;÷¥––¡˜≥ÃÕºµ⁄“ª≤Ω
+0126 7002             45     JNZ X
+0128 C3               46     CLR C
+0129 09               47     INC R1
+012A                  48     X:
+012A E6               49     MOV A,@R0
+                      50     ;±»ΩœR1”ÎR0+1µƒ¥Û–°
+012B 97               51     SUBB A,@R1
+012C 400D             52     JC LOOP4
+012E E8               53     MOV A,R0
+012F 04               54     INC A
+0130 99               55     SUBB A,R1
+0131 7005             56     JNZ Y
+0133 EB               57     MOV A,R3
+0134 C7               58     XCH A,@R1
+A51 MACRO ASSEMBLER  MAIN                                                                 06/15/2021 23:10:32 PAGE     2
+
+0135 F6               59     MOV @R0,A
+0136 8003             60     SJMP LOOP4
+0138                  61     Y:
+0138 EB               62     MOV A,R3
+0139 C6               63     XCH A,@R0
+013A F7               64     MOV @R1,A
+013B                  65     LOOP4:
+013B 09               66     INC R1
+                      67     ;≥÷–¯—≠ª∑÷±÷¡Ω· ¯
+013C DAE3             68     DJNZ R2,LOOP3
+013E 08               69     INC R0
+                      70     ;≥÷–¯—≠ª∑÷±÷¡Ω· ¯
+013F DCD5             71     DJNZ R4,LOOP2
+0141 80FE             72     SJMP $
+0030                  73     ORG 0030H
+0030 0B030902         74     TABLE: DB 11,3,9,2,17,4,11,6
+0034 11040B06                
+0038 05146440         75     DB 5,20,100,64,21,14,79,35  
+003C 150E4F23                
+0040 5C075B17         76     DB 92,7,91,23,65,16,13,18
+0044 41100D12                
+0048 12494165         77     DB 18,73,65,101,27,19,62,69
+004C 1B133E45                
+                      78     END
+A51 MACRO ASSEMBLER  MAIN                                                                 06/15/2021 23:10:32 PAGE     3
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES
+
+LOOP1. . . . . . .  C ADDR   010EH   A   
+LOOP2. . . . . . .  C ADDR   0116H   A   
+LOOP3. . . . . . .  C ADDR   0121H   A   
+LOOP4. . . . . . .  C ADDR   013BH   A   
+MAIN . . . . . . .  C ADDR   0100H   A   
+SP . . . . . . . .  D ADDR   0081H   A   
+TABLE. . . . . . .  C ADDR   0030H   A   
+X. . . . . . . . .  C ADDR   012AH   A   
+Y. . . . . . . . .  C ADDR   0138H   A   
+
+
+REGISTER BANK(S) USED: 0 
+
+
+ASSEMBLY COMPLETE.  0 WARNING(S), 0 ERROR(S)

@@ -1,0 +1,57 @@
+DATAS SEGMENT
+    BUF1 DB 'The School of Information Science and Engineering Shandong University!$'
+    ;这个代码好啊，直接把我那个无法判断多长的问题解决了
+    COUNT EQU $-BUF1
+    BUF2 DB COUNT DUP(0)
+    ;一些提示信息
+    MSG DB 'COPY COMPLETED!$'
+    MSGB DB 'COPY A STRING',13,10
+    	 DB 'PRESS ANY KEY TO START...'
+    	 DB 13,10,'$'
+DATAS ENDS
+
+CODES SEGMENT
+    ASSUME CS:CODES,DS:DATAS,ES:DATAS
+START:
+    MOV AX,DATAS
+    MOV DS,AX
+    MOV ES,AX
+
+
+    MOV AH,9
+    ;这样写和用LEA是一样的，不过为了训练新知识就先这样写
+    MOV DX, OFFSET MSGB
+    INT 21H
+    MOV AH,1
+    INT 21H
+
+	CALL COPY
+
+    MOV AH,9
+    
+    MOV DX, OFFSET MSG
+    INT 21H
+    MOV DX, OFFSET BUF2
+    INT 21H 
+    MOV AH,1
+    INT 21H   
+    MOV AH,4CH
+    INT 21H
+
+    ;执行复制代码功能的子程序
+    COPY PROC
+
+    ;根据bloc中提到的形式进行复制
+    MOV SI,OFFSET BUF1
+    MOV DI,OFFSET BUF2
+    ;指定循环次数
+    MOV CX,COUNT
+    ;在字符串操作中，能够使得SI DI增加，指向后面的地址
+    CLD    
+    REP MOVSB 
+    ;从上述指令继续向下执行 
+    RET
+    COPY ENDP 
+
+CODES ENDS
+    END START

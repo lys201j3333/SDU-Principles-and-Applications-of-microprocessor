@@ -1,0 +1,224 @@
+BL51 BANKED LINKER/LOCATER V6.22                                                        06/17/2021  20:13:23  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
+D:\KEIL\C51\BIN\BL51.EXE STARTUP.obj, main.obj TO shiyan4.9
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  STARTUP.obj (?C_STARTUP)
+  main.obj (MAIN)
+  D:\KEIL\C51\LIB\C51S.LIB (?C_INIT)
+
+
+LINK MAP OF MODULE:  shiyan4.9 (?C_STARTUP)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     0004H     UNIT         ?DT?MAIN
+            DATA    000CH     0002H     UNIT         _DATA_GROUP_
+            IDATA   000EH     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+                    0003H     07FDH                  *** GAP ***
+            CODE    0800H     008CH     UNIT         ?C_C51STARTUP
+            CODE    088CH     0026H     UNIT         ?PR?_DISPLAY?MAIN
+            CODE    08B2H     0025H     UNIT         ?PR?MAIN?MAIN
+            CODE    08D7H     001FH     UNIT         ?PR?_DELAY_MS?MAIN
+            CODE    08F6H     001FH     UNIT         ?PR?INITLCD?MAIN
+            CODE    0915H     001EH     UNIT         ?PR?_WRITE_DATA?MAIN
+            CODE    0933H     001CH     UNIT         ?PR?_WRITE_COM?MAIN
+            CODE    094FH     0018H     UNIT         ?CO?MAIN
+            CODE    0967H     0007H     UNIT         ?C_INITSEG
+
+
+
+OVERLAY MAP OF MODULE:   shiyan4.9 (?C_STARTUP)
+
+
+SEGMENT                          DATA_GROUP 
+  +--> CALLED SEGMENT          START    LENGTH
+----------------------------------------------
+?C_C51STARTUP                  -----    -----
+  +--> ?PR?MAIN?MAIN
+  +--> ?C_INITSEG
+
+?PR?MAIN?MAIN                  -----    -----
+  +--> ?PR?INITLCD?MAIN
+  +--> ?CO?MAIN
+  +--> ?PR?_DISPLAY?MAIN
+
+?PR?INITLCD?MAIN               -----    -----
+  +--> ?PR?_WRITE_COM?MAIN
+
+BL51 BANKED LINKER/LOCATER V6.22                                                      06/17/2021  20:13:23  PAGE 2
+
+
+?PR?_WRITE_COM?MAIN            -----    -----
+  +--> ?PR?_DELAY_MS?MAIN
+
+?PR?_DISPLAY?MAIN              000CH    0002H
+  +--> ?PR?_WRITE_COM?MAIN
+  +--> ?PR?_WRITE_DATA?MAIN
+
+?PR?_WRITE_DATA?MAIN           -----    -----
+  +--> ?PR?_DELAY_MS?MAIN
+
+
+
+SYMBOL TABLE OF MODULE:  shiyan4.9 (?C_STARTUP)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        ?C_STARTUP
+  C:0800H         SEGMENT       ?C_C51STARTUP
+  I:000EH         SEGMENT       ?STACK
+  C:0000H         PUBLIC        ?C_STARTUP
+  D:00E0H         SYMBOL        ACC
+  D:00F0H         SYMBOL        B
+  D:0083H         SYMBOL        DPH
+  D:0082H         SYMBOL        DPL
+  N:0000H         SYMBOL        IBPSTACK
+  N:0100H         SYMBOL        IBPSTACKTOP
+  N:0080H         SYMBOL        IDATALEN
+  C:0803H         SYMBOL        IDATALOOP
+  N:0000H         SYMBOL        PBPSTACK
+  N:0100H         SYMBOL        PBPSTACKTOP
+  N:0000H         SYMBOL        PDATALEN
+  N:0000H         SYMBOL        PDATASTART
+  N:0000H         SYMBOL        PPAGE
+  N:0000H         SYMBOL        PPAGEENABLE
+  D:00A0H         SYMBOL        PPAGE_SFR
+  D:0081H         SYMBOL        SP
+  C:0800H         SYMBOL        STARTUP1
+  N:0000H         SYMBOL        XBPSTACK
+  N:0000H         SYMBOL        XBPSTACKTOP
+  N:0000H         SYMBOL        XDATALEN
+  N:0000H         SYMBOL        XDATASTART
+  C:0000H         LINE#         126
+  C:0800H         LINE#         133
+  C:0802H         LINE#         134
+  C:0803H         LINE#         135
+  C:0804H         LINE#         136
+  C:0806H         LINE#         185
+  C:0809H         LINE#         196
+  -------         ENDMOD        ?C_STARTUP
+
+  -------         MODULE        MAIN
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0080H         PUBLIC        P0
+  D:0090H         PUBLIC        P1
+  C:0956H         PUBLIC        number
+  C:0933H         PUBLIC        _Write_Com
+BL51 BANKED LINKER/LOCATER V6.22                                                      06/17/2021  20:13:23  PAGE 3
+
+
+  C:094FH         PUBLIC        name
+  C:08B2H         PUBLIC        main
+  B:0080H.1       PUBLIC        LCD_EN
+  D:0008H         PUBLIC        pos
+  C:08D7H         PUBLIC        _delay_ms
+  B:0080H.3       PUBLIC        LCD_RS
+  C:088CH         PUBLIC        _Display
+  B:0080H.2       PUBLIC        LCD_WR
+  C:0963H         PUBLIC        a
+  B:0080H.0       PUBLIC        PSB
+  C:08F6H         PUBLIC        InitLCD
+  C:0915H         PUBLIC        _Write_Data
+  -------         PROC          _DELAY_MS
+  D:0006H         SYMBOL        xms
+  -------         DO            
+  D:0004H         SYMBOL        j
+  -------         ENDDO         
+  C:08D7H         LINE#         15
+  C:08D7H         LINE#         16
+  C:08D7H         LINE#         18
+  C:08E1H         LINE#         19
+  C:08F5H         LINE#         20
+  -------         ENDPROC       _DELAY_MS
+  -------         PROC          _WRITE_DATA
+  D:0003H         SYMBOL        dat
+  C:0915H         LINE#         22
+  C:0917H         LINE#         23
+  C:0917H         LINE#         24
+  C:0919H         LINE#         25
+  C:091BH         LINE#         26
+  C:091DH         LINE#         28
+  C:0924H         LINE#         30
+  C:0926H         LINE#         31
+  C:0928H         LINE#         32
+  C:0929H         LINE#         33
+  C:092AH         LINE#         34
+  C:092CH         LINE#         35
+  -------         ENDPROC       _WRITE_DATA
+  -------         PROC          _WRITE_COM
+  D:0003H         SYMBOL        com
+  C:0933H         LINE#         39
+  C:0935H         LINE#         40
+  C:0935H         LINE#         42
+  C:0937H         LINE#         43
+  C:0939H         LINE#         45
+  C:0940H         LINE#         47
+  C:0942H         LINE#         48
+  C:0944H         LINE#         49
+  C:0945H         LINE#         50
+  C:0946H         LINE#         51
+  C:0948H         LINE#         52
+  -------         ENDPROC       _WRITE_COM
+  -------         PROC          INITLCD
+  C:08F6H         LINE#         56
+  C:08F6H         LINE#         57
+  C:08F6H         LINE#         58
+  C:08F8H         LINE#         59
+BL51 BANKED LINKER/LOCATER V6.22                                                      06/17/2021  20:13:23  PAGE 4
+
+
+  C:08FAH         LINE#         60
+  C:08FCH         LINE#         61
+  C:0901H         LINE#         62
+  C:0906H         LINE#         63
+  C:090BH         LINE#         64
+  C:0910H         LINE#         65
+  -------         ENDPROC       INITLCD
+  -------         PROC          _DISPLAY
+  D:0007H         SYMBOL        x
+  D:0005H         SYMBOL        y
+  D:000CH         SYMBOL        str
+  -------         DO            
+  D:0001H         SYMBOL        i
+  -------         ENDDO         
+  C:088CH         LINE#         77
+  C:0890H         LINE#         78
+  C:0890H         LINE#         81
+  C:089AH         LINE#         83
+  C:08ABH         LINE#         84
+  C:08B1H         LINE#         85
+  -------         ENDPROC       _DISPLAY
+  -------         PROC          MAIN
+  C:08B2H         LINE#         87
+  C:08B2H         LINE#         88
+  C:08B2H         LINE#         90
+  C:08B5H         LINE#         91
+  C:08B5H         LINE#         92
+  C:08B5H         LINE#         93
+  C:08BFH         LINE#         94
+  C:08CAH         LINE#         95
+  C:08D5H         LINE#         96
+  -------         ENDPROC       MAIN
+  -------         ENDMOD        MAIN
+
+******************************************************************************
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 00F0H BYTE (11%) *
+******************************************************************************
+
+Program Size: data=15.0 xdata=0 code=369
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

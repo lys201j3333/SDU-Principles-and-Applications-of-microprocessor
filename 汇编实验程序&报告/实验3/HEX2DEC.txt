@@ -1,0 +1,79 @@
+DATAS SEGMENT
+    bin dw 10 dup(?)    
+    buf db 10 dup(?)      
+    msg1 db 'please input a hex number',13,10,'$'
+    msg2 db 'the dec number:',13,10,'$'
+    crlf db 13,10,'$'   
+DATAS ENDS
+
+CODES SEGMENT
+    ASSUME CS:CODES,DS:DATAS
+START:
+    MOV AX,DATAS
+    MOV DS,AX
+    
+       mov bx,0       
+       
+       LEA dx,msg1       
+       mov ah,9
+       int 21h
+       
+ input:
+       mov ah,1        
+       int 21h
+       
+       sub al,30h      
+       jl init
+   
+       cmp al,10       
+       
+       sub al,27h        
+       cmp al,0ah        
+       jl init            
+       cmp al,0fh        
+       jg init        
+       
+  toBin:            
+       mov cl,4        
+       shl bx,cl        
+       mov ah,0        
+       add bx,ax        
+       mov bin,bx        
+       jmp input        
+       
+  init:                
+      mov ax,bin        
+      mov bx,10        
+      mov si,5        
+      
+  toDec:            
+      mov dx,0        
+      div bx            
+      mov [buf+si],dl    
+      dec si          
+      cmp ax,0       
+      ja toDec
+  
+
+      lea dx,crlf            
+      mov ah,9
+      int 21h
+      lea dx,msg2
+      mov ah,9
+      int 21h
+      
+  output:                
+      inc si
+      mov dl,[buf+si]
+      add dl,30h           
+      mov ah,2
+      int 21h
+      cmp si,5
+      jb output
+
+    mov ah,1
+    int 21h
+    MOV AH,4CH
+    INT 21H
+CODES ENDS
+    END START 
